@@ -1,0 +1,39 @@
+services:
+  # Backend API Service
+  - type: web
+    name: devura-tracker-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        value: noreply@devuratracker.com
+
+# Note: Frontend should be deployed as a separate Static Site
+# Go to Render Dashboard → New → Static Site and configure:
+# - Root Directory: frontend
+# - Build Command: npm install && npm run build
+# - Publish Directory: dist
+

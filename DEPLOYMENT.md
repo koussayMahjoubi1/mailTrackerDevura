@@ -76,8 +76,19 @@ Run the database migration in Supabase:
 
 ## Troubleshooting
 
-### Error: Could not read package.json
-- **Solution**: Make sure "Root Directory" is set to `backend` (for backend service) or `frontend` (for frontend site)
+### Error: Could not read package.json (ENOENT)
+
+**Quick Fix (Applied):** I've created a root-level `package.json` that works as a workaround. This should fix your immediate deployment issue.
+
+**Proper Fix (Recommended):** Set "Root Directory" to `backend` in Render service settings:
+1. Render Dashboard → Your Service → Settings
+2. Look for "Root Directory" field (may be under "Advanced")
+3. Set to: `backend`
+4. Save and redeploy
+
+**If Root Directory field doesn't exist:**
+- The root-level `package.json` workaround I created should work
+- Or delete the service and create a new one (Root Directory can sometimes only be set during creation)
 
 ### Backend can't connect to Supabase
 - Verify environment variables are set correctly
