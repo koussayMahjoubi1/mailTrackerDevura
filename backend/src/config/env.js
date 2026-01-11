@@ -10,13 +10,12 @@ dotenv.config();
 
 const getEnvVar = (key, defaultValue = null, required = false) => {
   const value = process.env[key];
-  if (!value && defaultValue === null) {
-    if (required || process.env.NODE_ENV === 'production') {
-      throw new Error(
-        `Missing required environment variable: ${key}\n` +
-        `Please set it in your .env file or deployment environment.`
-      );
-    }
+  // Only throw if explicitly required, not just because we're in production
+  if (!value && defaultValue === null && required) {
+    throw new Error(
+      `Missing required environment variable: ${key}\n` +
+      `Please set it in your .env file or deployment environment.`
+    );
   }
   return value || defaultValue;
 };
@@ -34,8 +33,8 @@ export const SUPABASE_URL = getEnvVar('SUPABASE_URL', null, true);
 export const SUPABASE_SERVICE_ROLE_KEY = getEnvVar('SUPABASE_SERVICE_ROLE_KEY', null, true);
 export const SUPABASE_ANON_KEY = getEnvVar('SUPABASE_ANON_KEY', null, true);
 
-// Frontend Configuration (for CORS)
-export const FRONTEND_URL = getEnvVar('FRONTEND_URL', isDevelopment ? 'http://localhost:3000' : null);
+// Frontend Configuration (for CORS) - Required in production
+export const FRONTEND_URL = getEnvVar('FRONTEND_URL', isDevelopment ? 'http://localhost:3000' : null, true);
 
 // Email Configuration (Optional - email notifications work only if configured)
 export const SMTP_HOST = getEnvVar('SMTP_HOST', 'smtp.gmail.com');
