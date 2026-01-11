@@ -37,12 +37,15 @@ export const SUPABASE_ANON_KEY = getEnvVar('SUPABASE_ANON_KEY', null, true);
 // Frontend Configuration (for CORS)
 export const FRONTEND_URL = getEnvVar('FRONTEND_URL', isDevelopment ? 'http://localhost:3000' : null);
 
-// Email Configuration
+// Email Configuration (Optional - email notifications work only if configured)
 export const SMTP_HOST = getEnvVar('SMTP_HOST', 'smtp.gmail.com');
 export const SMTP_PORT = parseInt(getEnvVar('SMTP_PORT', '587'), 10);
-export const SMTP_USER = getEnvVar('SMTP_USER');
-export const SMTP_PASS = getEnvVar('SMTP_PASS');
+export const SMTP_USER = getEnvVar('SMTP_USER', null); // Optional
+export const SMTP_PASS = getEnvVar('SMTP_PASS', null); // Optional
 export const SMTP_FROM = getEnvVar('SMTP_FROM', 'noreply@devuratracker.com');
+
+// Check if email notifications are enabled
+export const EMAIL_NOTIFICATIONS_ENABLED = !!(SMTP_USER && SMTP_PASS);
 
 // OAuth Configuration (optional)
 export const GMAIL_CLIENT_ID = getEnvVar('GMAIL_CLIENT_ID');

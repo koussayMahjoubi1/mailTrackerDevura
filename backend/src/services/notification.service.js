@@ -1,17 +1,28 @@
 import nodemailer from 'nodemailer';
 import { supabaseAdmin } from '../utils/supabase.js';
+import { config } from '../config/env.js';
 
 export class NotificationService {
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
-    });
+    // Only create transporter if SMTP is configured
+    if (config.email.user && config.email.pass) {
+      this.transporter = nodemailer.createTransport({
+        host: config.email.host,
+        port: config.email.port,
+        secure: false,
+        auth: {
+          user: config.email.user,
+          pass: config.email.pass
+        }
+      });
+    } else {
+      this.transporter = null;
+      console.log('⚠️  Email notifications disabled - SMTP not configured');
+    }
+  }
+
+  isEnabled() {
+    return this.transporter !== null;
   }
 
   async getUserEmail(userId) {
@@ -29,6 +40,10 @@ export class NotificationService {
   }
 
   async sendOpenNotification(userId, pixel, event) {
+    if (!this.isEnabled()) {
+      return; // Silently skip if email notifications are disabled
+    }
+
     const userEmail = await this.getUserEmail(userId);
     if (!userEmail) {
       console.log('Skipping notification - user email not found');
@@ -37,7 +52,7 @@ export class NotificationService {
 
     try {
       await this.transporter.sendMail({
-        from: process.env.SMTP_FROM,
+        from: config.email.from,
         to: userEmail,
         subject: `Email Opened: ${pixel.name}`,
         html: `
@@ -57,6 +72,10 @@ export class NotificationService {
   }
 
   async sendClickNotification(userId, link, event) {
+    if (!this.isEnabled()) {
+      return; // Silently skip if email notifications are disabled
+    }
+
     const userEmail = await this.getUserEmail(userId);
     if (!userEmail) {
       console.log('Skipping notification - user email not found');
@@ -65,7 +84,7 @@ export class NotificationService {
 
     try {
       await this.transporter.sendMail({
-        from: process.env.SMTP_FROM,
+        from: config.email.from,
         to: userEmail,
         subject: `Link Clicked: ${link.name}`,
         html: `
@@ -85,6 +104,10 @@ export class NotificationService {
   }
 
   async sendReplyNotification(userId, pixel, event) {
+    if (!this.isEnabled()) {
+      return; // Silently skip if email notifications are disabled
+    }
+
     const userEmail = await this.getUserEmail(userId);
     if (!userEmail) {
       console.log('Skipping notification - user email not found');
@@ -93,7 +116,7 @@ export class NotificationService {
 
     try {
       await this.transporter.sendMail({
-        from: process.env.SMTP_FROM,
+        from: config.email.from,
         to: userEmail,
         subject: `Reply Received: ${pixel.name}`,
         html: `
