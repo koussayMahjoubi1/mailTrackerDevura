@@ -8,7 +8,9 @@ import dashboardRoutes from './routes/dashboard.routes.js';
 import emailRoutes from './routes/email.routes.js';
 
 const app = express();
-const { PORT, FRONTEND_URL, NODE_ENV } = config.server;
+const PORT = config.server.port;
+const FRONTEND_URL = config.frontend.url;
+const NODE_ENV = config.server.nodeEnv;
 
 // Export supabase admin client for repositories
 export const supabase = supabaseAdmin.client;
@@ -46,7 +48,7 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-app.listen(PORT, async () => {
+app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Server running on port ${PORT} (${NODE_ENV} mode)`);
   
   // Check if tables exist, if not, prompt user to run migration
