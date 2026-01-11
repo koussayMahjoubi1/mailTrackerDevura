@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trackingService } from '../services/trackingService';
+import { config } from '../config/env.js';
 import './Tracking.css';
 
 function Tracking() {
@@ -157,11 +158,11 @@ function Tracking() {
   };
 
   const getPixelUrl = (pixelId) => {
-    return `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/tracking/pixel/${pixelId}`;
+    return `${config.api.baseURL}/api/tracking/pixel/${pixelId}`;
   };
 
   const getLinkUrl = (linkId) => {
-    return `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/tracking/link/${linkId}`;
+    return `${config.api.baseURL}/api/tracking/link/${linkId}`;
   };
 
   if (loading) {

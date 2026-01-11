@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { createClient } from '@supabase/supabase-js';
+import { config } from '../config/env.js';
 
 // Singleton Supabase client
 let supabaseClient = null;
@@ -7,15 +8,15 @@ let supabaseClient = null;
 const getSupabaseClient = () => {
   if (!supabaseClient) {
     supabaseClient = createClient(
-      import.meta.env.VITE_SUPABASE_URL,
-      import.meta.env.VITE_SUPABASE_ANON_KEY
+      config.supabase.url,
+      config.supabase.anonKey
     );
   }
   return supabaseClient;
 };
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
+  baseURL: config.api.baseURL,
 });
 
 // Get token from Supabase and add to requests

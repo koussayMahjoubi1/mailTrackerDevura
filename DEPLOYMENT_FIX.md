@@ -75,3 +75,9 @@ After deploying, check the logs. You should see:
 
 If you still see errors about `package.json` not found, the Root Directory or Build Command wasn't set correctly.
 
+## ✅ Build Fixed! Next Step: Environment Variables
+
+**Great news!** Your build is now working. If you see an error about missing environment variables (like `Supabase URL and Service Role Key must be set`), you need to add environment variables in Render.
+
+**See `RENDER_ENV_SETUP.md` for complete instructions on adding environment variables.**
+
