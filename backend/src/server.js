@@ -1,8 +1,6 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
 import express from 'express';
 import cors from 'cors';
+import { config } from './config/env.js';
 import { supabaseAdmin } from './utils/supabase.js';
 import authRoutes from './routes/auth.routes.js';
 import trackingRoutes from './routes/tracking.routes.js';
@@ -10,14 +8,14 @@ import dashboardRoutes from './routes/dashboard.routes.js';
 import emailRoutes from './routes/email.routes.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const { PORT, FRONTEND_URL, NODE_ENV } = config.server;
 
 // Export supabase admin client for repositories
 export const supabase = supabaseAdmin.client;
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: FRONTEND_URL,
   credentials: true
 }));
 app.use(express.json());
@@ -39,7 +37,7 @@ app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(err.status || 500).json({
     error: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    ...(config.server.isDevelopment && { stack: err.stack })
   });
 });
 
@@ -49,7 +47,7 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, async () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT} (${NODE_ENV} mode)`);
   
   // Check if tables exist, if not, prompt user to run migration
   try {
