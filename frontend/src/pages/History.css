@@ -1,0 +1,218 @@
+.history-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.header-left > div {
+  flex: 1;
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-family: 'Courier New', monospace;
+  margin: 0;
+}
+
+.page-header .subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+}
+
+.back-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 0.5rem 1rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+}
+
+.back-btn:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
+}
+
+.filters-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Courier New', monospace;
+}
+
+.filter-group input {
+  padding: 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.filter-group input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 1px rgba(0, 255, 255, 0.2);
+}
+
+.logs-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+}
+
+.logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.log-entry {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  transition: all 0.2s ease;
+  font-family: 'Courier New', monospace;
+}
+
+.log-entry:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.1);
+}
+
+.log-entry.log-open:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.1);
+}
+
+.log-entry.log-click:hover {
+  border-color: var(--accent-green);
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.1);
+}
+
+.log-entry.log-reply:hover {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.1);
+}
+
+.log-timestamp {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.log-type {
+  display: flex;
+  align-items: center;
+}
+
+.type-badge {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 1px solid;
+  font-family: 'Courier New', monospace;
+}
+
+.type-open {
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 4px rgba(0, 255, 255, 0.2);
+}
+
+.type-click {
+  color: var(--accent-green);
+  border-color: var(--accent-green);
+  box-shadow: 0 0 4px rgba(0, 255, 136, 0.2);
+}
+
+.type-reply {
+  color: var(--accent-purple);
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 4px rgba(168, 85, 247, 0.2);
+}
+
+.log-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+@media (max-width: 768px) {
+  .history-page {
+    padding: 1rem;
+  }
+
+  .log-entry {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .log-meta {
+    text-align: left;
+  }
+}
+
