@@ -163,8 +163,20 @@ export class TrackingController {
   async getTrackingConfig(req, res, next) {
     try {
       const { config } = await import('../config/env.js');
+      let publicUrl = config.tracking.publicUrl;
+
+      // If not set in production, try to construct from request
+      if (!publicUrl && config.server.isProduction) {
+        // Use the request's host to construct the URL
+        const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+        const host = req.headers['x-forwarded-host'] || req.headers.host;
+        publicUrl = `${protocol}://${host}`;
+        console.log(`📡 Auto-detected public tracking URL: ${publicUrl}`);
+      }
+
       res.json({
-        publicTrackingUrl: config.tracking.publicUrl
+        publicTrackingUrl: publicUrl,
+        isProduction: config.server.isProduction
       });
     } catch (error) {
       next(error);

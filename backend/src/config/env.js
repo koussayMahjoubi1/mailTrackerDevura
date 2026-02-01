@@ -37,8 +37,26 @@ export const SUPABASE_ANON_KEY = getEnvVar('SUPABASE_ANON_KEY', null, true);
 export const FRONTEND_URL = getEnvVar('FRONTEND_URL', isDevelopment ? 'http://localhost:3000' : null, true);
 
 // Public Tracking URL (for pixels/links sent externally)
-// Falls back to local backend if not set
-export const PUBLIC_TRACKING_URL = getEnvVar('PUBLIC_TRACKING_URL', `http://localhost:${PORT}`);
+// In production, this MUST be set to your deployed backend URL
+// In development, defaults to localhost
+const getPublicTrackingUrl = () => {
+  const envUrl = getEnvVar('PUBLIC_TRACKING_URL');
+
+  // If explicitly set, use it
+  if (envUrl) return envUrl;
+
+  // In development, default to localhost
+  if (isDevelopment) return `http://localhost:${PORT}`;
+
+  // In production, try to construct from environment or throw warning
+  console.warn('⚠️  PUBLIC_TRACKING_URL not set in production! Tracking pixels may not work correctly.');
+  console.warn('⚠️  Please set PUBLIC_TRACKING_URL to your deployed backend URL in Render environment variables.');
+
+  // Return null to force frontend to handle it
+  return null;
+};
+
+export const PUBLIC_TRACKING_URL = getPublicTrackingUrl();
 
 // Email Configuration
 export const SMTP_HOST = getEnvVar('SMTP_HOST', 'smtp.gmail.com');

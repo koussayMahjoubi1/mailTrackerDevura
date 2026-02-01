@@ -20,12 +20,14 @@
 4. [ ] Set Build Command: `npm install`
 5. [ ] Set Start Command: `npm start`
 6. [ ] Add ALL environment variables from `backend/.env.example`
-7. [ ] **IMPORTANT**: Leave `PUBLIC_TRACKING_URL` empty initially
+7. [ ] **CRITICAL**: Set `PUBLIC_TRACKING_URL` to your backend URL
+   - Example: `https://devuratracker-backend.onrender.com`
+   - **DO NOT** use localhost or leave it empty in production
+   - This determines what URL appears in your tracking pixel HTML
 8. [ ] Deploy and wait for it to finish
 9. [ ] Copy your backend URL (e.g., `https://xyz.onrender.com`)
-10. [ ] Go back to Environment tab
-11. [ ] Set `PUBLIC_TRACKING_URL` to your backend URL
-12. [ ] Service will auto-redeploy
+10. [ ] Verify `PUBLIC_TRACKING_URL` matches your actual backend URL
+11. [ ] If you forgot to set it, the system will auto-detect (but it's better to set it explicitly)
 
 ---
 

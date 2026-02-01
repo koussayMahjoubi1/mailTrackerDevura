@@ -17,7 +17,8 @@ function Tracking() {
   const [testPixelId, setTestPixelId] = useState(null);
   const [createForm, setCreateForm] = useState({ name: '', originalUrl: '' });
   const [deleting, setDeleting] = useState(false);
-  const [publicTrackingUrl, setPublicTrackingUrl] = useState(config.api.baseURL);
+  // Initialize with backend URL (will be updated by loadTrackingConfig)
+  const [publicTrackingUrl, setPublicTrackingUrl] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -30,9 +31,14 @@ function Tracking() {
       if (configData.publicTrackingUrl) {
         setPublicTrackingUrl(configData.publicTrackingUrl);
         console.log('📡 Using public tracking URL:', configData.publicTrackingUrl);
+      } else {
+        // Fallback to backend API URL
+        setPublicTrackingUrl(config.api.baseURL);
+        console.warn('⚠️  No public tracking URL configured, using backend URL:', config.api.baseURL);
       }
     } catch (err) {
-      console.warn('Failed to load tracking config, using local URL:', err);
+      console.warn('Failed to load tracking config, using backend URL:', err);
+      setPublicTrackingUrl(config.api.baseURL);
     }
   };
 
@@ -180,7 +186,7 @@ function Tracking() {
     return `${publicTrackingUrl}/api/tracking/link/${linkId}`;
   };
 
-  if (loading) {
+  if (loading || !publicTrackingUrl) {
     return <div className="loading">Loading tracking assets...</div>;
   }
 
