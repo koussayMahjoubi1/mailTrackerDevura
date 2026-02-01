@@ -44,43 +44,59 @@ export class TrackingController {
   }
 
   async trackOpen(req, res, next) {
+    // Always return a pixel, even if tracking fails
+    const pixel = Buffer.from(
+      'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+      'base64'
+    );
+
     try {
       const { pixelId } = req.params;
       const forceTest = req.query.force_test === 'true';
       const isProxy = req.headers['user-agent']?.includes('GoogleImageProxy') ||
-        req.headers['user-agent']?.includes('via ggpht.com');
+        req.headers['user-agent']?.includes('via ggpht.com') ||
+        req.headers['user-agent']?.includes('Mozilla/5.0 (Windows NT 5.1; rv:11.0)');
 
       const metadata = {
         ip: req.ip || req.headers['x-forwarded-for'] || 'unknown',
         userAgent: req.headers['user-agent'] || 'unknown',
         isProxy,
         referer: req.headers['referer'] || 'direct',
-        // If we have a user in req (from optional auth), we'll know for sure
         openedBySender: !!req.user,
-        forceTest
+        forceTest,
+        headers: {
+          'x-forwarded-for': req.headers['x-forwarded-for'],
+          'x-real-ip': req.headers['x-real-ip'],
+        }
       };
 
-      console.log(`[PIXEL] Signal detected: ID ${pixelId} | IP: ${metadata.ip} | Proxy: ${isProxy} | ForceTest: ${forceTest}`);
+      console.log(`[PIXEL] 📡 Signal detected:`);
+      console.log(`  - Pixel ID: ${pixelId}`);
+      console.log(`  - IP: ${metadata.ip}`);
+      console.log(`  - User-Agent: ${metadata.userAgent}`);
+      console.log(`  - Is Proxy: ${isProxy}`);
+      console.log(`  - Force Test: ${forceTest}`);
+      console.log(`  - Referer: ${metadata.referer}`);
 
       await trackingService.trackOpen(pixelId, metadata);
+      console.log(`[PIXEL] ✅ Tracking recorded successfully`);
 
-      // Return 1x1 transparent pixel
-      const pixel = Buffer.from(
-        'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-        'base64'
-      );
-
-      res.writeHead(200, {
-        'Content-Type': 'image/gif',
-        'Content-Length': pixel.length,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      });
-      res.end(pixel);
     } catch (error) {
-      next(error);
+      // Log error but still return pixel
+      console.error(`[PIXEL] ❌ Error tracking pixel:`, error.message);
+      console.error(`[PIXEL] Stack:`, error.stack);
     }
+
+    // Always return the pixel image
+    res.writeHead(200, {
+      'Content-Type': 'image/gif',
+      'Content-Length': pixel.length,
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'Access-Control-Allow-Origin': '*'
+    });
+    res.end(pixel);
   }
 
   async trackClick(req, res, next) {
