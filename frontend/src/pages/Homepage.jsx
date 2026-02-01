@@ -1,8 +1,33 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { notificationService } from '../services/notificationService';
 import './Homepage.css';
 
 function Homepage() {
   const navigate = useNavigate();
+
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    async function getUnread() {
+      try {
+        const { notifications } = await notificationService.getNotifications();
+        const unread = notifications.filter(n => !n.is_read).length;
+        setUnreadCount(unread);
+      } catch (err) {
+        console.error('Failed to fetch unread count');
+      }
+    }
+    getUnread();
+
+    const channel = notificationService.subscribeToNotifications((newNotif) => {
+      setUnreadCount(prev => prev + 1);
+    });
+
+    return () => {
+      if (channel) channel.unsubscribe();
+    };
+  }, []);
 
   const quickActions = [
     {
@@ -14,19 +39,27 @@ function Homepage() {
       accent: 'cyan'
     },
     {
-      id: 'history',
-      title: 'History Logs',
-      description: 'View event logs and signals',
+      id: 'dashboard',
+      title: 'Analytics Dashboard',
+      description: 'Detailed metrics and charts',
       icon: '>',
-      route: '/history',
+      route: '/dashboard',
       accent: 'green'
     },
     {
-      id: 'dashboard',
-      title: 'Dashboard',
-      description: 'Analytics and metrics overview',
+      id: 'alerts',
+      title: unreadCount > 0 ? `Alerts (${unreadCount} New)` : 'Real-time Alerts',
+      description: 'Your tracked event feed',
+      icon: unreadCount > 0 ? '🔔' : '>',
+      route: '/notifications',
+      accent: unreadCount > 0 ? 'purple' : 'cyan'
+    },
+    {
+      id: 'history',
+      title: 'History Logs',
+      description: 'Full event chronology',
       icon: '>',
-      route: '/dashboard',
+      route: '/history',
       accent: 'green'
     }
   ];
@@ -40,13 +73,13 @@ function Homepage() {
 
       <div className="quick-actions">
         <div className="section-label">
-          <span>Quick Actions</span>
+          <span>{unreadCount > 0 ? '🚨 Priority Actions' : 'Quick Actions'}</span>
         </div>
         <div className="actions-grid">
           {quickActions.map((action) => (
             <div
               key={action.id}
-              className={`action-card action-${action.accent}`}
+              className={`action-card action-${action.accent} ${action.id === 'alerts' && unreadCount > 0 ? 'pulse-card' : ''}`}
               onClick={() => navigate(action.route)}
             >
               <div className="action-icon">{action.icon}</div>

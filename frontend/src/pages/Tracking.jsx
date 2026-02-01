@@ -17,10 +17,24 @@ function Tracking() {
   const [testPixelId, setTestPixelId] = useState(null);
   const [createForm, setCreateForm] = useState({ name: '', originalUrl: '' });
   const [deleting, setDeleting] = useState(false);
+  const [publicTrackingUrl, setPublicTrackingUrl] = useState(config.api.baseURL);
 
   useEffect(() => {
     loadData();
+    loadTrackingConfig();
   }, []);
+
+  const loadTrackingConfig = async () => {
+    try {
+      const configData = await trackingService.getTrackingConfig();
+      if (configData.publicTrackingUrl) {
+        setPublicTrackingUrl(configData.publicTrackingUrl);
+        console.log('📡 Using public tracking URL:', configData.publicTrackingUrl);
+      }
+    } catch (err) {
+      console.warn('Failed to load tracking config, using local URL:', err);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -137,17 +151,17 @@ function Tracking() {
 <body>
     <div class="container">
         <h1>Tracking Pixel Test Page</h1>
-        <p>This page contains your tracking pixel. When you view this page, it should fire a tracking event.</p>
+        <p>This page contains your tracking pixel in TEST MODE. It will trigger a notification even though you're the creator.</p>
         <div class="pixel-box">
             <p>Tracking pixel below (1x1 transparent image):</p>
-            <img src="${getPixelUrl(pixelId)}" width="1" height="1" alt="Tracking Pixel" />
-            <p style="margin-top: 1rem; color: #00ff88;">✓ Pixel loaded - check your event logs!</p>
+            <img src="${getPixelUrl(pixelId, true)}" width="1" height="1" alt="Tracking Pixel" />
+            <p style="margin-top: 1rem; color: #00ff88;">✓ Pixel loaded - check your notifications!</p>
         </div>
         <p><strong>How to test:</strong></p>
         <ol>
             <li>View this page (the pixel loads automatically)</li>
-            <li>Go back to DevuraTracker → History Logs</li>
-            <li>You should see an "open" event recorded</li>
+            <li>Go back to DevuraTracker → Notifications or History Logs</li>
+            <li>You should see a notification and an "open" event recorded</li>
         </ol>
     </div>
 </body>
@@ -157,12 +171,13 @@ function Tracking() {
     window.open(url, '_blank');
   };
 
-  const getPixelUrl = (pixelId) => {
-    return `${config.api.baseURL}/api/tracking/pixel/${pixelId}`;
+  const getPixelUrl = (pixelId, forceTest = false) => {
+    const baseUrl = `${publicTrackingUrl}/api/tracking/pixel/${pixelId}`;
+    return forceTest ? `${baseUrl}?force_test=true` : baseUrl;
   };
 
   const getLinkUrl = (linkId) => {
-    return `${config.api.baseURL}/api/tracking/link/${linkId}`;
+    return `${publicTrackingUrl}/api/tracking/link/${linkId}`;
   };
 
   if (loading) {
@@ -248,24 +263,24 @@ function Tracking() {
               <p>When the page loads, it will automatically fire a tracking event.</p>
               <div className="pixel-preview">
                 <div className="preview-box">
-                  <img 
-                    src={getPixelUrl(testPixelId)} 
-                    width="1" 
-                    height="1" 
+                  <img
+                    src={getPixelUrl(testPixelId, true)}
+                    width="1"
+                    height="1"
                     alt="Tracking Pixel"
-                    onLoad={() => console.log('Pixel loaded!')}
+                    onLoad={() => console.log('Test pixel loaded - notification should fire!')}
                   />
-                  <span>1x1 transparent pixel</span>
+                  <span>1x1 transparent pixel (test mode)</span>
                 </div>
               </div>
               <div className="test-actions">
-                <button 
+                <button
                   className="test-open-btn"
                   onClick={() => openTestPage(testPixelId)}
                 >
                   Open Test Page
                 </button>
-                <button 
+                <button
                   className="test-direct-btn"
                   onClick={() => window.open(getPixelUrl(testPixelId), '_blank')}
                 >
@@ -409,14 +424,14 @@ function Tracking() {
               <p className="delete-warning-text">This action cannot be undone. All associated events will also be deleted.</p>
             </div>
             <div className="modal-actions">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={deleting}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className="delete-confirm-btn"
                 onClick={confirmDelete}
                 disabled={deleting}

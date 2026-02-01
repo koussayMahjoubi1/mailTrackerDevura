@@ -1,137 +1,191 @@
-# Deployment Guide for Render
+# DevuraTracker - Render Deployment Guide
 
-This is a monorepo with separate `backend/` and `frontend/` directories. You need to deploy them as separate services on Render.
+## 📋 Pre-Deployment Checklist
 
-## Deployment Structure
+### ✅ Backend Ready
+- [x] Self-tracking detection implemented
+- [x] Public tracking URL configuration added
+- [x] CORS configured for production
+- [x] Environment variables documented
+- [x] Database migrations ready
 
-1. **Backend Service** - Node.js/Express API
-2. **Frontend Static Site** - React/Vite build
+### ✅ Frontend Ready
+- [x] Dynamic tracking URL fetching
+- [x] Production API endpoint configuration
+- [x] Notification system integrated
 
-## Step 1: Deploy Backend
+---
 
-1. Go to Render Dashboard → **New** → **Web Service**
-2. Connect your GitHub repository
-3. Configure:
-   - **Name**: `devura-tracker-backend` (or your choice)
-   - **Root Directory**: `backend` ← **IMPORTANT!**
-   - **Runtime**: Node
-   - **Build Command**: `npm install && npm run build` (or just `npm install` if you don't have a build step)
+## 🚀 Deployment Steps
+
+### **1. Deploy Backend to Render**
+
+#### Create New Web Service:
+1. Go to [Render Dashboard](https://dashboard.render.com/)
+2. Click **"New +"** → **"Web Service"**
+3. Connect your GitHub repository
+4. Configure:
+   - **Name**: `devuratracker-backend` (or your choice)
+   - **Region**: Choose closest to your users
+   - **Branch**: `main` (or your default branch)
+   - **Root Directory**: `backend`
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install`
    - **Start Command**: `npm start`
-   - **Environment**: Node
+   - **Instance Type**: Free (or paid for better performance)
 
-4. Add Environment Variables:
-   ```
-   PORT=10000
-   NODE_ENV=production
-   SUPABASE_URL=your_supabase_url
-   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-   SUPABASE_ANON_KEY=your_anon_key
-   FRONTEND_URL=https://your-frontend-url.onrender.com
-   SMTP_HOST=smtp.gmail.com
-   SMTP_PORT=587
-   SMTP_USER=your_email@gmail.com
-   SMTP_PASS=your_app_password
-   SMTP_FROM=noreply@devuratracker.com
-   ```
+#### Set Environment Variables:
+Go to **Environment** tab and add these variables:
 
-5. Click **Create Web Service**
+```bash
+# Required - Supabase
+SUPABASE_URL=https://gvvqaewvhcvhbyleunvi.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2dnFhZXd2aGN2aGJ5bGV1bnZpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzcxNzgwMCwiZXhwIjoyMDgzMjkzODAwfQ.7_c0QLOB2PRK2tJLOECTDVAJC6t3GQOjY_Et4EHpeco
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2dnFhZXd2aGN2aGJ5bGV1bnZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3MTc4MDAsImV4cCI6MjA4MzI5MzgwMH0.f8RsamihbYQAkwPK2fKXY4Pyk1rl4ZlbVcE3rS4hu_0
 
-## Step 2: Deploy Frontend
+# Required - Server Config
+NODE_ENV=production
+PORT=3001
 
-1. Go to Render Dashboard → **New** → **Static Site**
+# IMPORTANT - Set this to your Render backend URL after deployment
+# Example: https://devuratracker-backend.onrender.com
+PUBLIC_TRACKING_URL=https://YOUR-BACKEND-URL.onrender.com
+
+# IMPORTANT - Set this to your frontend URL after frontend deployment
+# Example: https://devuratracker.onrender.com
+FRONTEND_URL=https://YOUR-FRONTEND-URL.onrender.com
+
+# Email Configuration (Optional - for email notifications)
+SMTP_HOST=ssl0.ovh.net
+SMTP_PORT=465
+SMTP_USER=contact@devura.net
+SMTP_PASS=123456789DwVlDeVuRa
+SMTP_FROM=contact@devura.net
+```
+
+#### After Backend Deploys:
+1. Copy your backend URL (e.g., `https://devuratracker-backend.onrender.com`)
+2. Update `PUBLIC_TRACKING_URL` environment variable with this URL
+3. The service will auto-redeploy
+
+---
+
+### **2. Deploy Frontend to Render**
+
+#### Create New Static Site:
+1. Click **"New +"** → **"Static Site"**
 2. Connect your GitHub repository
 3. Configure:
-   - **Name**: `devura-tracker-frontend` (or your choice)
-   - **Root Directory**: `frontend` ← **IMPORTANT!**
+   - **Name**: `devuratracker` (or your choice)
+   - **Branch**: `main`
+   - **Root Directory**: `frontend`
    - **Build Command**: `npm install && npm run build`
    - **Publish Directory**: `dist`
 
-4. Add Environment Variables:
-   ```
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_anon_key
-   VITE_API_URL=https://your-backend-url.onrender.com
-   ```
+#### Update Frontend Config:
+Before deploying, update `frontend/src/config/env.js`:
 
-5. Click **Create Static Site**
-
-## Step 3: Update URLs
-
-After both services are deployed:
-
-1. Get your backend URL (e.g., `https://devura-tracker-backend.onrender.com`)
-2. Get your frontend URL (e.g., `https://devura-tracker-frontend.onrender.com`)
-3. Update Frontend environment variables in Render:
-   - Set `VITE_API_URL` to your backend URL
-4. Update Backend environment variables in Render:
-   - Set `FRONTEND_URL` to your frontend URL
-
-## Step 4: Database Migration
-
-Run the database migration in Supabase:
-1. Go to Supabase Dashboard → SQL Editor
-2. Copy and paste contents of `backend/supabase/migrations/001_initial_schema.sql`
-3. Execute the migration
-4. (Optional) Run `backend/supabase/migrations/002_rls_policies.sql` for RLS policies
-
-## Troubleshooting
-
-### Error: Could not read package.json (ENOENT)
-
-**Quick Fix (Applied):** I've created a root-level `package.json` that works as a workaround. This should fix your immediate deployment issue.
-
-**Proper Fix (Recommended):** Set "Root Directory" to `backend` in Render service settings:
-1. Render Dashboard → Your Service → Settings
-2. Look for "Root Directory" field (may be under "Advanced")
-3. Set to: `backend`
-4. Save and redeploy
-
-**If Root Directory field doesn't exist:**
-- The root-level `package.json` workaround I created should work
-- Or delete the service and create a new one (Root Directory can sometimes only be set during creation)
-
-### Backend can't connect to Supabase
-- Verify environment variables are set correctly
-- Check that `SUPABASE_SERVICE_ROLE_KEY` is the service_role key (not anon key)
-
-### Frontend can't connect to backend
-- Verify `VITE_API_URL` is set to your backend URL (include `https://`)
-- Check CORS settings in backend - `FRONTEND_URL` should match your frontend URL
-
-### Build fails
-- Make sure Node.js version is compatible (v16+)
-- Check that all dependencies are listed in package.json
-- Review build logs for specific errors
-
-### 500 errors after deployment
-- Check that database migration has been run
-- Verify all environment variables are set
-- Check backend logs in Render dashboard
-
-## Alternative: Single Root Directory
-
-If Render doesn't support root directory setting, you can create a root `package.json`:
-
-```json
-{
-  "name": "devura-tracker",
-  "private": true,
-  "scripts": {
-    "install:backend": "cd backend && npm install",
-    "install:frontend": "cd frontend && npm install",
-    "build:backend": "cd backend && npm run build",
-    "build:frontend": "cd frontend && npm run build",
-    "start:backend": "cd backend && npm start"
-  }
-}
+```javascript
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.MODE === 'production' 
+    ? 'https://YOUR-BACKEND-URL.onrender.com'  // Replace with your backend URL
+    : 'http://localhost:3001');
 ```
 
-But the **Root Directory** approach is cleaner and recommended.
+#### Set Environment Variables (Frontend):
+```bash
+VITE_API_URL=https://YOUR-BACKEND-URL.onrender.com
+VITE_SUPABASE_URL=https://gvvqaewvhcvhbyleunvi.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2dnFhZXd2aGN2aGJ5bGV1bnZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3MTc4MDAsImV4cCI6MjA4MzI5MzgwMH0.f8RsamihbYQAkwPK2fKXY4Pyk1rl4ZlbVcE3rS4hu_0
+```
 
-## Notes
+---
 
-- Backend service will get a URL like: `https://devura-tracker-backend.onrender.com`
-- Frontend static site will get a URL like: `https://devura-tracker-frontend.onrender.com`
-- Free tier services spin down after inactivity - first request may be slow
-- Consider upgrading to paid tier for always-on services
+### **3. Update Backend CORS After Frontend Deploys**
 
+Once your frontend is live:
+1. Go to backend service in Render
+2. Update `FRONTEND_URL` environment variable with your frontend URL
+3. Service will auto-redeploy
+
+---
+
+## 🧪 Testing After Deployment
+
+### Test 1: Basic Functionality
+1. Visit your frontend URL
+2. Register/Login
+3. Create a tracking pixel
+4. Verify the pixel URL uses your production backend URL
+
+### Test 2: Tracking Pixel
+1. Copy the pixel HTML code
+2. Send it via email to another device
+3. Open the email
+4. Check your notifications in the app
+
+### Test 3: Self-Detection
+1. Open the pixel on your own computer
+2. Verify you DON'T get a notification (self-tracking prevention)
+
+---
+
+## 🔧 Troubleshooting
+
+### Issue: Tracking pixels not working
+- ✅ Verify `PUBLIC_TRACKING_URL` is set correctly in backend
+- ✅ Check backend logs in Render dashboard
+- ✅ Ensure CORS is allowing all origins for tracking endpoints
+
+### Issue: CORS errors
+- ✅ Verify `FRONTEND_URL` matches your actual frontend URL
+- ✅ Check that both URLs use HTTPS in production
+
+### Issue: Database errors
+- ✅ Verify all Supabase environment variables are correct
+- ✅ Check that RLS policies are properly configured
+
+---
+
+## 📊 Production Monitoring
+
+### Render Dashboard:
+- Monitor logs for errors
+- Check service health
+- Review metrics
+
+### Supabase Dashboard:
+- Monitor database usage
+- Check API requests
+- Review authentication logs
+
+---
+
+## 🎯 Post-Deployment
+
+1. **Test thoroughly** from multiple devices
+2. **Monitor logs** for the first few hours
+3. **Update documentation** with production URLs
+4. **Set up alerts** in Render for service downtime
+
+---
+
+## 🔐 Security Notes
+
+- ✅ Never commit `.env` files to Git
+- ✅ Use Render's environment variables for secrets
+- ✅ Keep Supabase service role key secure
+- ✅ Regularly rotate API keys and passwords
+
+---
+
+## 📝 Important URLs to Save
+
+After deployment, save these:
+- **Frontend**: `https://YOUR-APP.onrender.com`
+- **Backend**: `https://YOUR-BACKEND.onrender.com`
+- **Supabase**: `https://gvvqaewvhcvhbyleunvi.supabase.co`
+
+---
+
+Good luck with your deployment! 🚀

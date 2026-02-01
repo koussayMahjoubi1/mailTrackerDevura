@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>DevuraTracker - Ngrok Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0b;
+            color: #00f2fe;
+            padding: 3rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background: #1a1a1b;
+            border: 2px solid #00f2fe;
+            padding: 2rem;
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00ff88;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .status {
+            background: #2a2a2b;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-left: 4px solid #00ff88;
+        }
+
+        .pixel-info {
+            background: #0f0f10;
+            padding: 1rem;
+            margin: 1rem 0;
+            border: 1px dashed #00f2fe;
+        }
+
+        code {
+            background: #000;
+            padding: 0.2rem 0.5rem;
+            color: #00ff88;
+        }
+
+        .success {
+            color: #00ff88;
+        }
+
+        .warning {
+            color: #ffaa00;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚀 Ngrok Integration Test</h1>
+
+        <div class="status">
+            <p class="success">✅ <strong>Ngrok URL Active:</strong></p>
+            <code>https://supplemental-sunni-primulaceous.ngrok-free.dev</code>
+        </div>
+
+        <div class="pixel-info">
+            <h3>📡 Test Instructions:</h3>
+            <ol>
+                <li>Go to DevuraTracker → Tracking Assets</li>
+                <li>Create a new tracking pixel</li>
+                <li>Copy the HTML code from the pixel card</li>
+                <li>Paste it below this text in this file</li>
+                <li>Save this file and send it via email to another device</li>
+                <li>Open the email on the other device</li>
+                <li>Check your DevuraTracker notifications!</li>
+            </ol>
+        </div>
+
+        <div class="pixel-info">
+            <h3>🔍 What to Expect:</h3>
+            <ul>
+                <li><strong>Local Test:</strong> Opening this file on your PC will be detected as a "self-open" and
+                    won't trigger a notification (by design)</li>
+                <li><strong>Remote Test:</strong> Opening this from another device/IP will trigger a notification in
+                    your Alert Center</li>
+                <li><strong>Gmail/Outlook:</strong> Email clients may proxy the image, but you'll still get the
+                    notification</li>
+            </ul>
+        </div>
+
+        <div class="status">
+            <p class="warning">⚠️ <strong>Important:</strong></p>
+            <p>Make sure your Ngrok tunnel is running before testing!</p>
+            <p>Run: <code>ngrok http 3001</code></p>
+        </div>
+
+        <hr style="border-color: #00f2fe; margin: 2rem 0;">
+
+        <!-- PASTE YOUR TRACKING PIXEL HTML BELOW THIS LINE -->
+
+        <!-- Example (replace with your actual pixel):
+        <img src="https://supplemental-sunni-primulaceous.ngrok-free.dev/api/tracking/pixel/YOUR-PIXEL-ID" width="1" height="1" alt="" />
+        -->
+
+    </div>
+</body>
+
+</html>

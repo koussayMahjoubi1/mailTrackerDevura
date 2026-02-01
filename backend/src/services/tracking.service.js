@@ -5,27 +5,38 @@ const trackingRepo = new TrackingRepository();
 const notificationService = new NotificationService();
 
 export class TrackingService {
-  async createPixel(userId, name) {
-    return await trackingRepo.createTrackingPixel(userId, name);
+  async createPixel(userId, name, creatorIp) {
+    return await trackingRepo.createTrackingPixel(userId, name, creatorIp);
   }
 
-  async createLink(userId, name, originalUrl) {
-    return await trackingRepo.createTrackingLink(userId, name, originalUrl);
+  async createLink(userId, name, originalUrl, creatorIp) {
+    return await trackingRepo.createTrackingLink(userId, name, originalUrl, creatorIp);
   }
 
   async trackOpen(pixelId, metadata = {}) {
+    // Get pixel info
+    const pixel = await trackingRepo.getTrackingPixel(pixelId);
+
+    // Self-detection logic (can be bypassed with force_test)
+    const isSelfOpen = !metadata.forceTest && (metadata.openedBySender || metadata.ip === pixel.creator_ip);
+
     const event = await trackingRepo.recordOpen(pixelId, {
       ...metadata,
+      isSelfOpen,
       ip: metadata.ip || 'unknown',
       userAgent: metadata.userAgent || 'unknown',
       timestamp: new Date().toISOString()
     });
 
-    // Get pixel info for notification
-    const pixel = await trackingRepo.getTrackingPixel(pixelId);
-    
-    // Send notification
-    await notificationService.sendOpenNotification(pixel.user_id, pixel, event);
+    // Send notification if it's NOT a self-open OR if force_test is enabled
+    if (!isSelfOpen || metadata.forceTest) {
+      await notificationService.sendOpenNotification(pixel.user_id, pixel, event);
+      if (metadata.forceTest) {
+        console.log(`[PIXEL] Force test enabled - sending notification for Pixel ${pixelId}`);
+      }
+    } else {
+      console.log(`[PIXEL] Ignored self-open for Pixel ${pixelId}`);
+    }
 
     return event;
   }
@@ -52,7 +63,7 @@ export class TrackingService {
     });
 
     const pixel = await trackingRepo.getTrackingPixel(pixelId);
-    
+
     // Send notification
     await notificationService.sendReplyNotification(pixel.user_id, pixel, event);
 
@@ -81,6 +92,14 @@ export class TrackingService {
 
   async deleteLink(userId, linkId) {
     return await trackingRepo.deleteLink(userId, linkId);
+  }
+
+  async deleteEvent(userId, eventId) {
+    return await trackingRepo.deleteEvent(userId, eventId);
+  }
+
+  async deleteAllEvents(userId) {
+    return await trackingRepo.deleteAllEvents(userId);
   }
 }
 

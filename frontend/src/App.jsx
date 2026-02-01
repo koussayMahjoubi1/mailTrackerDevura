@@ -6,6 +6,7 @@ import Homepage from './pages/Homepage';
 import Dashboard from './pages/Dashboard';
 import Tracking from './pages/Tracking';
 import History from './pages/History';
+import Notifications from './pages/Notifications';
 import Layout from './components/Layout';
 
 function PrivateRoute({ children }) {
@@ -69,6 +70,13 @@ function AppRoutes() {
           </Layout>
         </PrivateRoute>
       } />
+      <Route path="/notifications" element={
+        <PrivateRoute>
+          <Layout>
+            <Notifications />
+          </Layout>
+        </PrivateRoute>
+      } />
       <Route path="/" element={<Navigate to="/homepage" />} />
     </Routes>
   );
@@ -83,4 +91,3 @@ function App() {
 }
 
 export default App;
-

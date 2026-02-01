@@ -33,5 +33,6 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+export { getSupabaseClient };
 export default api;
 

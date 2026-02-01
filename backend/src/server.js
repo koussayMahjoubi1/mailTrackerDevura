@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.routes.js';
 import trackingRoutes from './routes/tracking.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import emailRoutes from './routes/email.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
 
 const app = express();
 const PORT = config.server.port;
@@ -16,8 +17,18 @@ const NODE_ENV = config.server.nodeEnv;
 export const supabase = supabaseAdmin.client;
 
 // Middleware
+// Allow CORS from frontend for API calls, but allow all origins for tracking pixels/links
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+
+    // Allow frontend URL
+    if (origin === FRONTEND_URL) return callback(null, true);
+
+    // Allow any origin for tracking endpoints (pixels/links need to work from emails)
+    callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -33,6 +44,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tracking', trackingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/email', emailRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -50,14 +62,14 @@ app.use((req, res) => {
 
 app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Server running on port ${PORT} (${NODE_ENV} mode)`);
-  
+
   // Check if tables exist, if not, prompt user to run migration
   try {
     const { data, error } = await supabaseAdmin.client
       .from('tracking_pixels')
       .select('id')
       .limit(1);
-    
+
     if (error && error.code === '42P01') {
       console.log('\n⚠️  Database tables not found!');
       console.log('Please run the migration:');

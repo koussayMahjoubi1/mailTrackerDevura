@@ -2,13 +2,14 @@ import { randomUUID } from 'crypto';
 import { supabase } from '../server.js';
 
 export class TrackingRepository {
-  async createTrackingPixel(userId, name) {
+  async createTrackingPixel(userId, name, creatorIp) {
     const { data, error } = await supabase
       .from('tracking_pixels')
       .insert({
         user_id: userId,
         name,
-        pixel_id: randomUUID()
+        pixel_id: randomUUID(),
+        creator_ip: creatorIp
       })
       .select()
       .single();
@@ -17,14 +18,15 @@ export class TrackingRepository {
     return data;
   }
 
-  async createTrackingLink(userId, name, originalUrl) {
+  async createTrackingLink(userId, name, originalUrl, creatorIp) {
     const { data, error } = await supabase
       .from('tracking_links')
       .insert({
         user_id: userId,
         name,
         original_url: originalUrl,
-        link_id: randomUUID()
+        link_id: randomUUID(),
+        creator_ip: creatorIp
       })
       .select()
       .single();
@@ -57,7 +59,7 @@ export class TrackingRepository {
 
   async recordOpen(pixelId, metadata = {}) {
     const pixel = await this.getTrackingPixel(pixelId);
-    
+
     const { data, error } = await supabase
       .from('tracking_events')
       .insert({
@@ -75,7 +77,7 @@ export class TrackingRepository {
 
   async recordClick(linkId, metadata = {}) {
     const link = await this.getTrackingLink(linkId);
-    
+
     const { data, error } = await supabase
       .from('tracking_events')
       .insert({
@@ -93,7 +95,7 @@ export class TrackingRepository {
 
   async recordReply(pixelId, metadata = {}) {
     const pixel = await this.getTrackingPixel(pixelId);
-    
+
     const { data, error } = await supabase
       .from('tracking_events')
       .insert({
@@ -242,6 +244,27 @@ export class TrackingRepository {
       .from('tracking_links')
       .delete()
       .eq('id', link.id)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return { success: true };
+  }
+
+  async deleteEvent(userId, eventId) {
+    const { error } = await supabase
+      .from('tracking_events')
+      .delete()
+      .eq('id', eventId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return { success: true };
+  }
+
+  async deleteAllEvents(userId) {
+    const { error } = await supabase
+      .from('tracking_events')
+      .delete()
       .eq('user_id', userId);
 
     if (error) throw error;

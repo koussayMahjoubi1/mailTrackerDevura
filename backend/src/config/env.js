@@ -36,12 +36,21 @@ export const SUPABASE_ANON_KEY = getEnvVar('SUPABASE_ANON_KEY', null, true);
 // Frontend Configuration (for CORS) - Required in production
 export const FRONTEND_URL = getEnvVar('FRONTEND_URL', isDevelopment ? 'http://localhost:3000' : null, true);
 
-// Email Configuration (Optional - email notifications work only if configured)
+// Public Tracking URL (for pixels/links sent externally)
+// Falls back to local backend if not set
+export const PUBLIC_TRACKING_URL = getEnvVar('PUBLIC_TRACKING_URL', `http://localhost:${PORT}`);
+
+// Email Configuration
 export const SMTP_HOST = getEnvVar('SMTP_HOST', 'smtp.gmail.com');
 export const SMTP_PORT = parseInt(getEnvVar('SMTP_PORT', '587'), 10);
-export const SMTP_USER = getEnvVar('SMTP_USER', null); // Optional
-export const SMTP_PASS = getEnvVar('SMTP_PASS', null); // Optional
+export const SMTP_USER = getEnvVar('SMTP_USER', null);
+export const SMTP_PASS = getEnvVar('SMTP_PASS', null);
 export const SMTP_FROM = getEnvVar('SMTP_FROM', 'noreply@devuratracker.com');
+
+// Mailgun Configuration (Prioritized if available)
+export const MAILGUN_API_KEY = getEnvVar('MAILGUN_API_KEY', null);
+export const MAILGUN_DOMAIN = getEnvVar('MAILGUN_DOMAIN', null);
+export const MAILGUN_FROM = getEnvVar('MAILGUN_FROM', SMTP_FROM); // Default to SMTP_FROM if not set
 
 // Check if email notifications are enabled
 export const EMAIL_NOTIFICATIONS_ENABLED = !!(SMTP_USER && SMTP_PASS);
@@ -69,6 +78,9 @@ export const config = {
   },
   frontend: {
     url: FRONTEND_URL,
+  },
+  tracking: {
+    publicUrl: PUBLIC_TRACKING_URL,
   },
   email: {
     host: SMTP_HOST,

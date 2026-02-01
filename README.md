@@ -15,6 +15,10 @@ A full-stack email tracking application built with React (frontend) and Node.js/
   - Visual charts and graphs
   - Recent events timeline
 - **Email Notifications**: Receive email alerts when emails are opened, clicked, or replied to
+  - Clean architecture implementation with multiple provider support
+  - Works 24/7 via deployed backend (even when user is logged out)
+  - Beautiful responsive HTML email templates
+  - Graceful fallback to console logging for development
 - **Email Client Support**: Integration with IMAP, Gmail, and Outlook for reply tracking
 
 ## Architecture
@@ -232,6 +236,10 @@ frontend/
 - `POST /api/email/gmail/connect` - Connect Gmail account (requires auth)
 - `POST /api/email/outlook/connect` - Connect Outlook account (requires auth)
 - `POST /api/email/imap/connect` - Connect IMAP account (requires auth)
+
+### Notifications
+- `POST /api/notifications/test` - Send a test notification (requires auth)
+- `GET /api/notifications/status` - Get notification provider status (requires auth)
 
 ## Database Schema
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dashboardService } from '../services/dashboardService';
 import { format, subDays } from 'date-fns';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -10,6 +10,7 @@ function Dashboard() {
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [confirmModal, setConfirmModal] = useState({ show: false, type: 'all', id: null });
   const [dateRange, setDateRange] = useState({
     startDate: format(subDays(new Date(), 30), 'yyyy-MM-dd'),
     endDate: format(new Date(), 'yyyy-MM-dd'),
@@ -29,142 +30,177 @@ function Dashboard() {
       setMetrics(data);
       setError('');
     } catch (err) {
-      setError('Failed to load metrics');
+      setError('Failed to load analytical metrics');
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    return <div className="loading">Loading dashboard...</div>;
-  }
+  const handleDeleteRequest = (type, id = null) => {
+    setConfirmModal({ show: true, type, id });
+  };
 
-  if (error) {
-    return <div className="error">{error}</div>;
-  }
+  const confirmDelete = async () => {
+    try {
+      if (confirmModal.type === 'single' && confirmModal.id) {
+        await dashboardService.deleteEvent(confirmModal.id);
+        // Refresh metrics to update counts and chart
+        loadMetrics();
+      } else if (confirmModal.type === 'all') {
+        await dashboardService.clearAllEvents();
+        loadMetrics();
+      }
+    } catch (err) {
+      console.error('Deletion failed:', err);
+    } finally {
+      setConfirmModal({ show: false, type: 'all', id: null });
+    }
+  };
+
+  if (loading) return <div className="loading">Analyzing tracking data...</div>;
 
   return (
     <div className="dashboard">
+      {/* Confirmation Modal */}
+      {confirmModal.show && (
+        <div className="modal-overlay">
+          <div className="confirm-modal danger">
+            <h3>⚠️ Confirm Permanent Deletion</h3>
+            <p>
+              {confirmModal.type === 'all'
+                ? 'Clear ALL tracking events? This will reset your analytics and charts. This action is permanent.'
+                : 'Delete this specific tracking event? This will update your charts and metrics immediately.'}
+            </p>
+            <div className="modal-actions">
+              <button className="cancel-btn" onClick={() => setConfirmModal({ ...confirmModal, show: false })}>Cancel</button>
+              <button className="confirm-btn-danger" onClick={confirmDelete}>Delete Permanently</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="dashboard-header">
         <div className="header-left">
-          <button className="back-btn" onClick={() => navigate('/homepage')}>
-            ← Back
-          </button>
-          <h1>Dashboard</h1>
+          <button className="back-btn" onClick={() => navigate('/homepage')}>← Back</button>
+          <h1>Analytics Dashboard</h1>
         </div>
-        <div className="date-filters">
-          <input
-            type="date"
-            value={dateRange.startDate}
-            onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
-          />
-          <span>to</span>
-          <input
-            type="date"
-            value={dateRange.endDate}
-            onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
-          />
+        <div className="header-actions">
+          <button className="notif-shortcut-btn" onClick={() => navigate('/notifications')}>
+            🔔 View Alerts
+          </button>
+          <div className="date-filters">
+            <input type="date" value={dateRange.startDate} onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })} />
+            <span>to</span>
+            <input type="date" value={dateRange.endDate} onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })} />
+          </div>
         </div>
       </div>
 
-      {metrics && (
-        <>
-          <div className="metrics-grid">
-            <div className="metric-card">
-              <h3>Open Rate</h3>
-              <div className="metric-value">{metrics.summary.openRate}%</div>
-              <div className="metric-count">{metrics.summary.totalOpens} opens</div>
-            </div>
-            <div className="metric-card">
-              <h3>Click Rate</h3>
-              <div className="metric-value">{metrics.summary.clickRate}%</div>
-              <div className="metric-count">{metrics.summary.totalClicks} clicks</div>
-            </div>
-            <div className="metric-card">
-              <h3>Reply Rate</h3>
-              <div className="metric-value">{metrics.summary.replyRate}%</div>
-              <div className="metric-count">{metrics.summary.totalReplies} replies</div>
-            </div>
-            <div className="metric-card">
-              <h3>Total Assets</h3>
-              <div className="metric-value">{metrics.summary.totalPixels + metrics.summary.totalLinks}</div>
-              <div className="metric-count">
-                {metrics.summary.totalPixels} pixels, {metrics.summary.totalLinks} links
+      <div className="dashboard-content">
+        {error && <div className="metrics-error">⚠️ {error}</div>}
+
+        {metrics ? (
+          <>
+            <div className="metrics-grid">
+              <div className="metric-card">
+                <h3>Open Rate</h3>
+                <div className="metric-value">{metrics.summary.openRate}%</div>
+                <div className="metric-count">{metrics.summary.totalOpens} total opens</div>
+              </div>
+              <div className="metric-card">
+                <h3>Click Rate</h3>
+                <div className="metric-value">{metrics.summary.clickRate}%</div>
+                <div className="metric-count">{metrics.summary.totalClicks} total clicks</div>
+              </div>
+              <div className="metric-card">
+                <h3>Reply Rate</h3>
+                <div className="metric-value">{metrics.summary.replyRate}%</div>
+                <div className="metric-count">{metrics.summary.totalReplies} total replies</div>
+              </div>
+              <div className="metric-card">
+                <h3>Total Assets</h3>
+                <div className="metric-value">{metrics.summary.totalPixels + metrics.summary.totalLinks}</div>
+                <div className="metric-count">
+                  {metrics.summary.totalPixels} Pixels | {metrics.summary.totalLinks} Links
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="charts-section">
-            <div className="chart-card">
-              <h2>Events Over Time</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={metrics.eventsByDate}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="opens" stroke="#8884d8" name="Opens" />
-                  <Line type="monotone" dataKey="clicks" stroke="#82ca9d" name="Clicks" />
-                  <Line type="monotone" dataKey="replies" stroke="#ffc658" name="Replies" />
-                </LineChart>
-              </ResponsiveContainer>
+            <div className="chart-wrapper">
+              <div className="chart-card large">
+                <h2>Engagement Trends</h2>
+                <ResponsiveContainer width="100%" height={350}>
+                  <LineChart data={metrics.eventsByDate}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis dataKey="date" stroke="rgba(255,255,255,0.5)" />
+                    <YAxis stroke="rgba(255,255,255,0.5)" />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#0a0a0b', border: '1px solid #30363d' }}
+                      itemStyle={{ color: '#00f2fe' }}
+                    />
+                    <Legend />
+                    <Line type="monotone" dataKey="opens" stroke="#00f2fe" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="clicks" stroke="#00ff88" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="replies" stroke="#bc00ff" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            <div className="chart-card">
-              <h2>Event Distribution</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={metrics.eventsByDate}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="opens" fill="#8884d8" name="Opens" />
-                  <Bar dataKey="clicks" fill="#82ca9d" name="Clicks" />
-                  <Bar dataKey="replies" fill="#ffc658" name="Replies" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="recent-events">
-            <h2>Recent Events</h2>
-            <div className="events-table">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Time</th>
-                    <th>IP</th>
-                    <th>User Agent</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {metrics.recentEvents.slice(0, 10).map((event) => (
-                    <tr key={event.id}>
-                      <td>
-                        <span className={`event-badge event-${event.event_type}`}>
-                          {event.event_type}
-                        </span>
-                      </td>
-                      <td>{new Date(event.created_at).toLocaleString()}</td>
-                      <td>{event.metadata?.ip || 'N/A'}</td>
-                      <td className="user-agent">
-                        {event.metadata?.userAgent?.substring(0, 50) || 'N/A'}
-                      </td>
+            <div className="recent-activity-section">
+              <div className="section-header-flex">
+                <h2>Chronological Events</h2>
+                {metrics.recentEvents.length > 0 && (
+                  <button className="clear-link-btn" onClick={() => handleDeleteRequest('all')}>
+                    Clear Signal History
+                  </button>
+                )}
+              </div>
+              <div className="activity-table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Event</th>
+                      <th>Time</th>
+                      <th>Source IP</th>
+                      <th>System Info</th>
+                      <th>Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {metrics.recentEvents.map((event) => (
+                      <tr key={event.id}>
+                        <td><span className={`type-dot ${event.event_type}`}></span>{event.event_type}</td>
+                        <td>{new Date(event.created_at).toLocaleString()}</td>
+                        <td>{event.metadata?.ip || 'Hidden'}</td>
+                        <td className="ua-text" title={event.metadata?.userAgent}>
+                          {event.metadata?.userAgent || 'N/A'}
+                        </td>
+                        <td>
+                          <button
+                            className="delete-row-btn"
+                            onClick={() => handleDeleteRequest('single', event.id)}
+                            title="Delete this event"
+                          >
+                            ×
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
+          </>
+        ) : (
+          <div className="empty-metrics">
+            No tracking data available for the selected period.
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }
 
 export default Dashboard;
-

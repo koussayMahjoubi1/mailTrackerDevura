@@ -46,5 +46,10 @@ export const trackingService = {
     const response = await api.delete(`/api/tracking/link/${linkId}`);
     return response.data;
   },
+
+  async getTrackingConfig() {
+    const response = await api.get('/api/tracking/config');
+    return response.data;
+  },
 };
 
